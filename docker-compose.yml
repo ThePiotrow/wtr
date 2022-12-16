@@ -2,6 +2,22 @@
 version: '3.1'
 
 services:
+  api:
+    build: ./back-end/.
+    restart: always
+    ports:
+      - 3000:3000
+    depends_on:
+      - db
+    environment:
+      - DB_HOST=db
+      - DB_USER=admin
+      - DB_PASS=password
+      - DB_NAME=mydb
+      - DB_PORT=5432
+      - DB_DIALECT=postgres
+    volumes:
+      - ./back-end:/usr/src/app 
 
   db:
     image: postgres:latest
