@@ -4,6 +4,14 @@ const http = require('http');
 const server = http.createServer(app);
 const { Server } = require("socket.io");
 const io = new Server(server);
+const { PrismaClient } = require('@prisma/client')
+
+const prisma = new PrismaClient()
+
+// async function main() {
+//   const allUsers = await prisma.user.findMany()
+//   console.log(allUsers)
+// }
 
 app.get('/', (req, res) => {
   res.sendFile(__dirname + '/index.html');
