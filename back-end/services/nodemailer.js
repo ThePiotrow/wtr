@@ -1,8 +1,8 @@
 const nodemailer = require('nodemailer');
 
 const transport = nodemailer.createTransport({
-    host: "ssl0.ovh.net",
-    port: 465,
+    host: process.env.EMAIL_HOST,
+    port: process.env.EMAIL_PORT,
     secure: true,
     auth: {
         user: process.env.EMAIL_ADDRESS,
