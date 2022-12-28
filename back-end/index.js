@@ -6,6 +6,7 @@ const { Server } = require("socket.io");
 const io = new Server(server);
 const { PrismaClient } = require('@prisma/client')
 const auth = require('./routes/auth');
+const rooms = require('./routes/rooms');
 
 const prisma = new PrismaClient()
 
@@ -65,6 +66,7 @@ io.on('connection', (socket) => {
 });
 
 app.use('/auth', auth);
+app.use('/rooms', rooms);
 // app.use('/users', require('./routes/users'));
 // app.use('/posts', require('./routes/posts'));
 // app.use('/profile', require('./routes/profile'));

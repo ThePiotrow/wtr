@@ -2,12 +2,12 @@ const {Router} = require('express') ;
 const bcrypt = require('bcrypt') ;
 const jwt = require('jsonwebtoken') ;
 const {PrismaClient} = require('@prisma/client') ;
-const sendEmail = require('../services.js/nodemailer');
+// const sendEmail = require('../services.js/nodemailer');
 const prisma = new PrismaClient() ; 
 
 const router = Router() ;
 
-router.get('/rooms', async (req, res) => {
+router.get('/', async (req, res) => {
     try {
         const rooms = await prisma.room.findMany() ;
         res.json(rooms) ;
@@ -18,7 +18,7 @@ router.get('/rooms', async (req, res) => {
     }
 });
 
-router.get('/rooms/:id', async (req, res) => {
+router.get('/:id', async (req, res) => {
     try {
         const room = await prisma.room.findUnique({where: {id: parseInt(req.params.id)}}) ;
         res.json(room) ;
@@ -28,15 +28,15 @@ router.get('/rooms/:id', async (req, res) => {
     }
 });
 
-router.post('/rooms', async (req, res) => {
+router.post('/', async (req, res) => {
     try {
-        const {name, description, type} = req.body ;
+        const {name, fkListUser, fkOrganizer, nbMaxUser} = req.body ;
         const room = await prisma.room.create({
             data: {
                 name,
-                description,
-                createdAt: new Date(),
-                updatedAt: new Date(),
+                fkOrganizer,
+                fkListUser,
+                nbMaxUser,
             }
         }) ;
         res.json(room) ;
@@ -46,14 +46,16 @@ router.post('/rooms', async (req, res) => {
     }
 });
 
-router.put('/rooms/:id', async (req, res) => {
+router.put('/:id', async (req, res) => {
     try {
-        const {name, description} = req.body ;
+        const {name, fkListUser, fkOrganizer, nbMaxUser} = req.body ;
         const room = await prisma.room.update({
             where: {id: parseInt(req.params.id)},
             data: {
                 name,
-                description,
+                fkOrganizer,
+                fkListUser,
+                nbMaxUser,
                 updatedAt: new Date(),
             }
         }) ;
@@ -64,7 +66,7 @@ router.put('/rooms/:id', async (req, res) => {
     }
 });
 
-router.delete('/rooms/:id', async (req, res) => {
+router.delete('/:id', async (req, res) => {
     try {
         const room = await prisma.room.delete({
             where: {id: parseInt(req.params.id)},
@@ -76,16 +78,14 @@ router.delete('/rooms/:id', async (req, res) => {
     }
 });
 
-router.post('/rooms/:id/messages', async (req, res) => {
+router.post('/:id/messages', async (req, res) => { 
     try {
-        const {content} = req.body ;
+        const {content, fkSender} = req.body ;
         const message = await prisma.message.create({
             data: {
                 content,
-                createdAt: new Date(),
-                updatedAt: new Date(),
-                roomId: parseInt(req.params.id),
-                userId: req.params.userId,
+                fkSender,
+                fkRoom: parseInt(req.params.id),
             }
         }) ;
         res.json(message) ;
@@ -95,7 +95,7 @@ router.post('/rooms/:id/messages', async (req, res) => {
     }
 });
 
-router.get('/rooms/:id/messages', async (req, res) => {
+router.get('/:id/messages', async (req, res) => {
     try {
         const messages = await prisma.message.findMany({
             where: {roomId: parseInt(req.params.id)},
@@ -108,7 +108,7 @@ router.get('/rooms/:id/messages', async (req, res) => {
     }
 });
 
-router.put('/rooms/:id/messages/:messageId', async (req, res) => {
+router.put('/:id/messages/:messageId', async (req, res) => {
     try {
         const {content} = req.body ;
         const message = await prisma.message.update({
@@ -126,7 +126,7 @@ router.put('/rooms/:id/messages/:messageId', async (req, res) => {
     }
 });
 
-router.delete('/rooms/:id/messages/:messageId', async (req, res) => {
+router.delete('/:id/messages/:messageId', async (req, res) => {
     try {
         const message = await prisma.message.delete({
             where: {id: parseInt(req.params.messageId)},
