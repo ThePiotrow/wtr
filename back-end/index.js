@@ -37,8 +37,7 @@ io.on('connection', (socket) => {
     console.log(data);
     socket.join(data.room);
 
-    socket.to(room).emit('user_joined', user
-    );
+    socket.to(room).emit('user_joined', user);
   });
   // socket.on('send_message', (data) => {
   //   io.to(data.room).emit('receive_message', data);
