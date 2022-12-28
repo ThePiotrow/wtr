@@ -3,19 +3,21 @@ version: '3.1'
 
 services:
   api:
-    build: ./back-end/.
+    build: ./back-end/
     restart: always
     ports:
       - 3000:3000
     depends_on:
       - db
     environment:
-      - DB_HOST=db
-      - DB_USER=admin
-      - DB_PASS=password
-      - DB_NAME=mydb
-      - DB_PORT=5432
-      - DB_DIALECT=postgres
+    - NODE_ENV=development
+    - DATABASE_URL=postgres://admin:password@db:5432/mydb
+      # - DB_HOST=db
+      # - DB_USER=admin
+      # - DB_PASS=password
+      # - DB_NAME=mydb
+      # - DB_PORT=5432
+      # - DB_DIALECT=postgres
     volumes:
       - ./back-end:/usr/src/app 
 
@@ -29,7 +31,7 @@ services:
     ports:
       - 5432:5432
     volumes:      
-      - ./back-end/db:/var/lib/postgresql/data
+      - db:/var/lib/postgresql/data
 
   adminer:
     image: adminer
@@ -40,4 +42,6 @@ services:
       - db  
     depends_on:
       - db
-    
+  
+volumes:
+  db: {}
