@@ -9,7 +9,7 @@ const router = Router();
 
 router.get('/', async (req, res) => {
     try {
-        const rooms = await prisma.room.findMany();
+        const rooms = await prisma.room.findMany({ include: { fkUsers: true } });
         res.json(rooms);
 
     } catch (error) {
@@ -20,7 +20,11 @@ router.get('/', async (req, res) => {
 
 router.get('/:roomId', async (req, res) => {
     try {
-        const room = await prisma.room.findUnique({ where: { id: parseInt(req.params.roomId) } });
+        const room = await prisma.room.findUnique({ 
+            where: { id: parseInt(req.params.roomId) },
+            include: { fkUsers: true } 
+        });
+
         res.json(room);
     } catch (error) {
         console.log(error);
@@ -30,16 +34,75 @@ router.get('/:roomId', async (req, res) => {
 
 router.post('/', async (req, res) => {
     try {
-        const { name, fkListUser, fkOrganizer, nbMaxUser } = req.body;
+        const { name, fkUsers, fkOrganizer, nbMaxUser } = req.body;
         const room = await prisma.room.create({
             data: {
                 name,
-                fkOrganizer,
-                fkListUser,
                 nbMaxUser,
             }
         });
+
         res.json(room);
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ error: 'Something went wrong' });
+    }
+});
+
+router.put('/:roomId/join', async (req, res) => {
+    try {
+        const { userId } = req.body;
+        const { roomId } = req.params;
+
+        const room = await prisma.room.findUnique({ where: { id: parseInt(roomId) }, include: { fkUsers: true } });
+
+        if (room.fkUsers.length >= room.nbMaxUser) {
+            res.status(500).json({ error: 'Room is full' });
+        }
+
+        if (room.fkUsers.some(user => user.id === userId)) {
+            res.status(500).json({ error: 'User already in room' });
+        }
+
+        const userRoom = await prisma.room.update({
+            where: { id: parseInt(roomId) },
+            data: {
+                fkUsers: {
+                    connect: { id: userId }
+                }
+            },
+            include: { fkUsers: true }
+        });
+
+        res.json(userRoom);
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ error: 'Something went wrong' });
+    }
+});
+
+router.put('/:roomId/leave', async (req, res) => {
+    try {
+        const { userId } = req.body;
+        const { roomId } = req.params;
+
+        const room = await prisma.room.findUnique({ where: { id: parseInt(roomId) }, include: { fkUsers: true } });
+
+        if (!room.fkUsers.some(user => user.id === userId)) {
+            res.status(500).json({ error: 'User not in the room' });
+        }
+
+        const userRoom = await prisma.room.update({
+            where: { id: parseInt(roomId) },
+            data: {
+                fkUsers: {
+                    disconnect: { id: userId }
+                }
+            },
+            include: { fkUsers: true }
+        });
+
+        res.json(userRoom);
     } catch (error) {
         console.log(error);
         res.status(500).json({ error: 'Something went wrong' });
@@ -48,17 +111,24 @@ router.post('/', async (req, res) => {
 
 router.put('/:roomId', async (req, res) => {
     try {
-        const { name, fkListUser, fkOrganizer, nbMaxUser } = req.body;
+        const { name, users, fkOrganizer, nbMaxUser } = req.body;
         const room = await prisma.room.update({
             where: { id: parseInt(req.params.roomId) },
             data: {
                 name,
                 fkOrganizer,
-                fkListUser,
-                nbMaxUser,
-                updatedAt: new Date(),
+                users,
+                nbMaxUser
             }
         });
+
+        const userRoom = await prisma.userRooms.create({
+            data: {
+                fkRoomId: room.id,
+                fkUserId: fkOrganizerId,
+            }
+        });
+
         res.json(room);
     } catch (error) {
         console.log(error);
