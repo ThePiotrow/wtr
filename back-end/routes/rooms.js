@@ -1,36 +1,36 @@
-const {Router} = require('express') ;
-const bcrypt = require('bcrypt') ;
-const jwt = require('jsonwebtoken') ;
-const {PrismaClient} = require('@prisma/client') ;
+const { Router } = require('express');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+const { PrismaClient } = require('@prisma/client');
 // const sendEmail = require('../services.js/nodemailer');
-const prisma = new PrismaClient() ; 
+const prisma = new PrismaClient();
 
-const router = Router() ;
+const router = Router();
 
 router.get('/', async (req, res) => {
     try {
-        const rooms = await prisma.room.findMany() ;
-        res.json(rooms) ;
+        const rooms = await prisma.room.findMany();
+        res.json(rooms);
 
     } catch (error) {
-        console.log(error) ;
-        res.status(500).json({error: 'Something went wrong'}) ;
+        console.log(error);
+        res.status(500).json({ error: 'Something went wrong' });
     }
 });
 
-router.get('/:id', async (req, res) => {
+router.get('/:roomId', async (req, res) => {
     try {
-        const room = await prisma.room.findUnique({where: {id: parseInt(req.params.id)}}) ;
-        res.json(room) ;
+        const room = await prisma.room.findUnique({ where: { id: parseInt(req.params.roomId) } });
+        res.json(room);
     } catch (error) {
-        console.log(error) ;
-        res.status(500).json({error: 'Something went wrong'}) ;
+        console.log(error);
+        res.status(500).json({ error: 'Something went wrong' });
     }
 });
 
 router.post('/', async (req, res) => {
     try {
-        const {name, fkListUser, fkOrganizer, nbMaxUser} = req.body ;
+        const { name, fkListUser, fkOrganizer, nbMaxUser } = req.body;
         const room = await prisma.room.create({
             data: {
                 name,
@@ -38,19 +38,19 @@ router.post('/', async (req, res) => {
                 fkListUser,
                 nbMaxUser,
             }
-        }) ;
-        res.json(room) ;
+        });
+        res.json(room);
     } catch (error) {
-        console.log(error) ;
-        res.status(500).json({error: 'Something went wrong'}) ;
+        console.log(error);
+        res.status(500).json({ error: 'Something went wrong' });
     }
 });
 
-router.put('/:id', async (req, res) => {
+router.put('/:roomId', async (req, res) => {
     try {
-        const {name, fkListUser, fkOrganizer, nbMaxUser} = req.body ;
+        const { name, fkListUser, fkOrganizer, nbMaxUser } = req.body;
         const room = await prisma.room.update({
-            where: {id: parseInt(req.params.id)},
+            where: { id: parseInt(req.params.roomId) },
             data: {
                 name,
                 fkOrganizer,
@@ -58,87 +58,86 @@ router.put('/:id', async (req, res) => {
                 nbMaxUser,
                 updatedAt: new Date(),
             }
-        }) ;
-        res.json(room) ;
+        });
+        res.json(room);
     } catch (error) {
-        console.log(error) ;
-        res.status(500).json({error: 'Something went wrong'}) ;
+        console.log(error);
+        res.status(500).json({ error: 'Something went wrong' });
     }
 });
 
-router.delete('/:id', async (req, res) => {
+router.delete('/:roomId', async (req, res) => {
     try {
         const room = await prisma.room.delete({
-            where: {id: parseInt(req.params.id)},
-        }) ;
-        res.json(room) ;
+            where: { id: parseInt(req.params.roomId) },
+        });
+        res.json(room);
     } catch (error) {
-        console.log(error) ;
-        res.status(500).json({error: 'Something went wrong'}) ;
+        console.log(error);
+        res.status(500).json({ error: 'Something went wrong' });
     }
 });
 
-router.post('/:id/messages', async (req, res) => { 
+router.post('/:roomId/message', async (req, res) => {
     try {
-        const {content, fkSender} = req.body ;
+        const { content, fkSender } = req.body;
         const message = await prisma.message.create({
             data: {
                 content,
                 fkSender,
-                fkRoom: parseInt(req.params.id),
+                fkRoom: parseInt(req.params.roomId),
             }
-        }) ;
-        res.json(message) ;
+        });
+        res.json(message);
     } catch (error) {
-        console.log(error) ;
-        res.status(500).json({error: 'Something went wrong'}) ;
+        console.log(error);
+        res.status(500).json({ error: 'Something went wrong' });
     }
 });
 
-router.get('/:id/messages', async (req, res) => {
+router.get('/:roomId/messages', async (req, res) => {
     try {
         const messages = await prisma.message.findMany({
-            where: {roomId: parseInt(req.params.id)},
-            orderBy: {createdAt: 'desc'},
-        }) ;
-        res.json(messages) ;
+            where: { fkRoom: parseInt(req.params.roomId) },
+            orderBy: { createdAt: 'desc' },
+        });
+        res.json(messages);
     } catch (error) {
-        console.log(error) ;
-        res.status(500).json({error: 'Something went wrong'}) ;
+        console.log(error);
+        res.status(500).json({ error: 'Something went wrong' });
     }
 });
 
-router.put('/:id/messages/:messageId', async (req, res) => {
+router.put('/:roomId/messages/:messageId', async (req, res) => {
     try {
-        const {content} = req.body ;
+        const { content } = req.body;
         const message = await prisma.message.update({
-            where: {id: parseInt(req.params.messageId)},
+            where: { id: parseInt(req.params.messageId) },
             data: {
-                content,
-                updatedAt: new Date(),
+                content
             }
-        }) ;
-        res.json(message) ;
+        });
+        res.json(message);
 
     } catch (error) {
-        console.log(error) ;
-        res.status(500).json({error: 'Something went wrong'}) ;
+        console.log(error);
+        res.status(500).json({ error: 'Something went wrong' });
     }
 });
 
-router.delete('/:id/messages/:messageId', async (req, res) => {
+router.delete('/:roomId/messages/:messageId', async (req, res) => {
     try {
         const message = await prisma.message.delete({
-            where: {id: parseInt(req.params.messageId)},
-        }) ;
-        res.json(message) ;
+            where: { id: parseInt(req.params.messageId) },
+        });
+        res.json(message);
     } catch (error) {
-        console.log(error) ;
+        console.log(error);
 
-        res.status(500).json({error: 'Something went wrong'}) ;
+        res.status(500).json({ error: 'Something went wrong' });
     }
 });
 
-module.exports = router ;
+module.exports = router;
 
 
