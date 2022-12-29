@@ -21,11 +21,6 @@ const sendEmail = (to, subject, html) => {
         html: html
     };
 
-    console.log({
-        user: process.env.EMAIL_ADDRESS,
-        pass: process.env.EMAIL_PASSWORD,
-    })
-
     // if (type === 'verify') {
     //     mailOptions = {
     //         ...mailOptions,
@@ -73,32 +68,4 @@ const sendEmail = (to, subject, html) => {
     })
 }
 
-
-
 module.exports = sendEmail;
-
-// Path: back-end/routes/auth.js
-// Compare this snippet from back-end/routes/auth.js:
-//     const token = req.headers.authorization.split(' ')[1] ;
-//     try {
-//         const {id} = jwt.verify(token, process.env.JWT_SECRET) ;
-//         const user = await prisma.user.findUnique({where: {id}}) ;
-//         if (user) {
-//             res.json(user) ;
-//         } else {
-
-//             res.status(401).json({error: 'Invalid token'}) ;
-//         }
-//     } catch (error) {
-//         res.status(401).json({error: 'Invalid token'}) ;
-//     }
-// });
-//
-// router.patch('/confirm', async (req, res) => {
-//     const token = req.headers.authorization.split(' ')[1] ;
-//     try {        
-
-
-
-
-
