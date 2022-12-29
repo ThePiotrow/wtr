@@ -29,12 +29,34 @@ function Copyright(props) {
 const theme = createTheme();
 
 export default function SignIn() {
+
+  let [errors, setErrors] = React.useState({});
+
   const handleSubmit = (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    console.log({
-      email: data.get('email'),
-      password: data.get('password'),
+    
+    fetch('http://localhost:3000/auth/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        email: data.get('email'),
+        password: data.get('password'),
+      }),
+    }).then((response) => {
+      response.json().then((body) => {
+        if (body.hasOwnProperty('error')){
+          console.log(body.error)
+          setErrors(body.error)
+        }
+        else if (body.hasOwnProperty('token')){
+          localStorage.setItem('token', body.token);
+        }
+      });
+    }).catch((error) => {
+        console.error(error);
     });
   };
 

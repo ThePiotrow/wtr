@@ -1,10 +1,14 @@
 import './App.css';
 import { Route, Link, Routes } from 'react-router-dom';
-import SignIn from './components/SignIn';
-import Home from './components/Home';
-import SignUp from './components/SignUp';
+import ViewHome from './views/ViewHome';
+import ViewSignIn from './views/ViewSignIn';
+import ViewSignUp from './views/ViewSignUp';
+import ViewRooms from './views/ViewRooms';
+import ViewConfirmEmail from './views/ViewConfirmEmail';
+import ViewRoom from './views/ViewRoom';
+import socketIO from 'socket.io-client';
 
-
+const socket = socketIO('http://localhost:3001');
 function App() {
   return (
     <div className="App">
@@ -18,14 +22,19 @@ function App() {
         <li>
           <Link to="/signup">signup</Link>
         </li>
+        <li>
+          <Link to="/rooms">rooms</Link>
+        </li>
       </ul>
 
 
       <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/signin" element={<SignIn />} />
-        <Route path="/signup" element={<SignUp />} />
-        <Route path="/rooms" />
+        <Route path="/" element={<ViewHome />} />
+        <Route path="/signin" element={<ViewSignIn />} />
+        <Route path="/signup" element={<ViewSignUp />} />
+        <Route path="/room/:id" element={<ViewRoom />}/>
+        <Route path="/rooms" element={<ViewRooms socket={socket}/>}/>
+        <Route path="/confirm" element={<ViewConfirmEmail />}/>
       </Routes>
     </div >
   );

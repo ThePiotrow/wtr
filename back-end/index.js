@@ -7,6 +7,7 @@ const io = new Server(server);
 const { PrismaClient } = require('@prisma/client')
 const auth = require('./routes/auth');
 const rooms = require('./routes/rooms');
+const cors = require('cors');
 
 const prisma = new PrismaClient()
 
@@ -17,6 +18,7 @@ const prisma = new PrismaClient()
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cors());
 
 
 app.get('/', (req, res) => {

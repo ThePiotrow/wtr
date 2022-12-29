@@ -32,10 +32,32 @@ export default function SignUp() {
   const handleSubmit = (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    console.log({
-      email: data.get('email'),
-      password: data.get('password'),
-    });
+    console.log(data)
+    const email = data.get('email')
+    const password = data.get('password')
+    const firstname = data.get('firstname')
+    const lastname = data.get('lastname')
+
+    fetch('http://localhost:3000/auth/register', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        email: email,
+        password: password,
+        firstname: firstname,
+        lastname: lastname
+      }),
+    }).then((response) => {
+      response.json().then((body) => {
+        console.log(body);
+      });
+    }
+    ).catch((error) => {
+      console.error(error);
+    }
+    );
   };
 
   return (
@@ -61,10 +83,10 @@ export default function SignUp() {
               <Grid item xs={12} sm={6}>
                 <TextField
                   autoComplete="given-name"
-                  name="firstName"
+                  name="firstname"
                   required
                   fullWidth
-                  id="firstName"
+                  id="firstname"
                   label="First Name"
                   autoFocus
                 />
@@ -73,9 +95,9 @@ export default function SignUp() {
                 <TextField
                   required
                   fullWidth
-                  id="lastName"
+                  id="lastname"
                   label="Last Name"
-                  name="lastName"
+                  name="lastname"
                   autoComplete="family-name"
                 />
               </Grid>
