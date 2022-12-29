@@ -1,18 +1,20 @@
 <script setup lang="ts">
 useHead({
-  title: 'Default Title',
+  title: "Default Title",
   meta: [
-    { name: 'description', content: 'Default Content' },
+    { name: "description", content: "Default Content" },
     {
-      name: 'theme-color',
-      content: computed(() => isDark.value ? '#00aba9' : '#ffffff'),
+      name: "theme-color",
+      content: computed(() => (isDark.value ? "#00aba9" : "#00aba9")),
     },
   ],
   link: [
     {
-      rel: 'icon',
-      type: 'image/svg+xml',
-      href: computed(() => preferredDark.value ? '/icons/favicon-dark.svg' : '/icons/favicon.svg'),
+      rel: "icon",
+      type: "image/svg+xml",
+      href: computed(() =>
+        preferredDark.value ? "/icons/favicon-dark.svg" : "/icons/favicon.svg"
+      ),
     },
   ],
 })
