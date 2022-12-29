@@ -11,7 +11,6 @@ router.get('/', async (req, res) => {
     try {
         const rooms = await prisma.room.findMany({ include: { fkUsers: true } });
         res.json(rooms);
-
     } catch (error) {
         console.log(error);
         res.status(500).json({ error: 'Something went wrong' });

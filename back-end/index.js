@@ -81,7 +81,7 @@ io.on('connection', (socket) => {
 
 app.use('/auth', auth);
 app.use('/rooms', rooms);
-app.use('/users', users);
+// app.use('/users', users);
 // app.use('/users', require('./routes/users'));
 // app.use('/posts', require('./routes/posts'));
 // app.use('/profile', require('./routes/profile'));
