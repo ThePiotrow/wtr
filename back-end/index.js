@@ -26,19 +26,20 @@ app.get('/', (req, res) => {
 io.on('connection', (socket) => {
   console.log(`user connected ${socket.id}`);
   socket.on('disconnect', () => {
-    console.log('user disconnected');
+    console.log(`user disconnected ${socket.id}`);
   });
-  socket.on('chat message', (msg) => {
-    console.log('message: ' + msg);
-    io.emit('chat message', msg);
+  socket.on('join_room', (room) => {
+    console.log("data join room :", room);
+    socket.join(room);
+    // socket.to(room).emit('user_joined', user);
   });
-  socket.on('join_room', (data) => {
-    const { room, user } = data;
-    console.log(data);
-    socket.join(data.room);
-
-    socket.to(room).emit('user_joined', user);
+  socket.on('message', ({message, room}) => {
+    socket.to(room).emit('message', 
+    {message, client: socket.id});
+    console.log('message: ' + message);
+    io.emit('message', message);
   });
+  
   // socket.on('send_message', (data) => {
   //   io.to(data.room).emit('receive_message', data);
   //   const createMsg = await prisma.message.create({
