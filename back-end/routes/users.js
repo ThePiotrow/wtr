@@ -31,13 +31,13 @@ router.get('/:userId', async (req, res) => {
 
 router.post('/', async (req, res) => {
     try {
-        const { email, password, firstName, lastName } = req.body;
+        const { email, password, firstname, lastname } = req.body;
         const user = await prisma.user.create({
             data: {
                 email,
                 password,
-                firstName,
-                lastName,
+                firstname,
+                lastname,
             }
         });
         res.json(user);
@@ -49,14 +49,14 @@ router.post('/', async (req, res) => {
 
 router.put('/:userId', async (req, res) => {
     try {
-        const { email, password, firstName, lastName, role } = req.body;
+        const { email, password, firstname, lastname, role } = req.body;
         const user = await prisma.user.update({
             where: { id: parseInt(req.params.userId) },
             data: {
                 email,
                 password,
-                firstName,
-                lastName,
+                firstname,
+                lastname,
                 role,
             }
         });
