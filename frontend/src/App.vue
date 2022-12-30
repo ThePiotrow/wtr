@@ -7,7 +7,7 @@ useHead({
       name: "theme-color",
       content: computed(() => (isDark.value ? "#00aba9" : "#00aba9")),
     },
-  ],
+  ], 
   link: [
     {
       rel: "icon",
