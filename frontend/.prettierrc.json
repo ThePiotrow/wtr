@@ -1,10 +1,10 @@
 {
-    "trailingComma": "all",
-    "bracketSpacing": true,
-    "tabWidth": 2,
-    "semi": false,
-    "singleQuote": false,
-    "arrowParens": "always",
-    "spaceBeforeFunctionParent": false,
-    "printWidth": 120
+  "trailingComma": "all",
+  "bracketSpacing": true,
+  "tabWidth": 2,
+  "semi": false,
+  "singleQuote": true,
+  "arrowParens": "always",
+  "spaceBeforeFunctionParent": false,
+  "printWidth": 120
 }

@@ -9,6 +9,7 @@ declare module '@vue/runtime-core' {
   export interface GlobalComponents {
     AvatarEdit: typeof import('./components/AvatarEdit.vue')['default']
     ChangePassword: typeof import('./components/ChangePassword.vue')['default']
+    Chat: typeof import('./components/Chat.vue')['default']
     Counter: typeof import('./components/Counter.vue')['default']
     EssentialLink: typeof import('./components/EssentialLink.vue')['default']
     FileUploader: typeof import('./components/FileUploader.vue')['default']
