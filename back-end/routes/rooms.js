@@ -4,20 +4,34 @@ const jwt = require('jsonwebtoken');
 const { PrismaClient } = require('@prisma/client');
 // const sendEmail = require('../services.js/nodemailer');
 const prisma = new PrismaClient();
+const Middleware = require('../security/Middleware');
 
 const router = Router();
 
-router.get('/', async (req, res) => {
+router.get('/', Middleware, async (req, res) => {
+    console.log(req.user);
     try {
-        const rooms = await prisma.room.findMany({ include: { fkUsers: true } });
-        res.json(rooms);
+        const rooms = await prisma.room.findMany({ 
+            include: { 
+                fkUsers: true
+            },
+            where: {
+                nbMaxUser: { 
+                    gt: 2 
+                }
+            }
+        });
+        res.json({
+            available: rooms.filter(room => !req.user.fkRooms.includes(room)),
+            joined: req.user.fkRooms,
+        });
     } catch (error) {
         console.log(error);
         res.status(500).json({ error: 'Something went wrong' });
     }
 });
 
-router.get('/:roomId', async (req, res) => {
+router.get('/:roomId', Middleware, async (req, res) => {
     try {
         const room = await prisma.room.findUnique({ 
             where: { id: parseInt(req.params.roomId) },
@@ -31,7 +45,7 @@ router.get('/:roomId', async (req, res) => {
     }
 });
 
-router.post('/', async (req, res) => {
+router.post('/', Middleware, async (req, res) => {
     try {
         const { name, fkUsers, fkOrganizer, nbMaxUser } = req.body;
         const room = await prisma.room.create({
@@ -48,18 +62,20 @@ router.post('/', async (req, res) => {
     }
 });
 
-router.put('/:roomId/join', async (req, res) => {
+router.put('/:roomId/join', Middleware, async (req, res) => {
     try {
-        const { userId } = req.body;
+        const { user } = req;
         const { roomId } = req.params;
 
         const room = await prisma.room.findUnique({ where: { id: parseInt(roomId) }, include: { fkUsers: true } });
+        
+        console.log(room)
 
         if (room.fkUsers.length >= room.nbMaxUser) {
             res.status(500).json({ error: 'Room is full' });
         }
 
-        if (room.fkUsers.some(user => user.id === userId)) {
+        if (room.fkUsers.some(usr => usr.id === user.id)) {
             res.status(500).json({ error: 'User already in room' });
         }
 
@@ -67,7 +83,7 @@ router.put('/:roomId/join', async (req, res) => {
             where: { id: parseInt(roomId) },
             data: {
                 fkUsers: {
-                    connect: { id: userId }
+                    connect: { id: user.id }
                 }
             },
             include: { fkUsers: true }
@@ -80,14 +96,14 @@ router.put('/:roomId/join', async (req, res) => {
     }
 });
 
-router.put('/:roomId/leave', async (req, res) => {
+router.put('/:roomId/leave', Middleware, async (req, res) => {
     try {
-        const { userId } = req.body;
+        const { user } = req;
         const { roomId } = req.params;
 
         const room = await prisma.room.findUnique({ where: { id: parseInt(roomId) }, include: { fkUsers: true } });
 
-        if (!room.fkUsers.some(user => user.id === userId)) {
+        if (!room.fkUsers.some(usr => usr.id === user.id)) {
             res.status(500).json({ error: 'User not in the room' });
         }
 
@@ -95,7 +111,7 @@ router.put('/:roomId/leave', async (req, res) => {
             where: { id: parseInt(roomId) },
             data: {
                 fkUsers: {
-                    disconnect: { id: userId }
+                    disconnect: { id: user.id }
                 }
             },
             include: { fkUsers: true }
@@ -136,6 +152,7 @@ router.put('/:roomId', async (req, res) => {
 });
 
 router.delete('/:roomId', async (req, res) => {
+    if(req.user.role !== 'ADMIN') return res.status(401).json({ error: 'Unauthorized' });
     try {
         const room = await prisma.room.delete({
             where: { id: parseInt(req.params.roomId) },
@@ -164,7 +181,9 @@ router.post('/:roomId/message', async (req, res) => {
     }
 });
 
-router.get('/:roomId/messages', async (req, res) => {
+router.get('/:roomId/messages', Middleware, async (req, res) => {
+    // req.user.rooms.includes(req.params.roomId)
+    // if (req.user.id !== message.fkSenderId) return res.status(401).json({ error: 'Unauthorized' });
     try {
         const messages = await prisma.message.findMany({
             where: { fkRoom: parseInt(req.params.roomId) },
@@ -186,6 +205,7 @@ router.put('/:roomId/messages/:messageId', async (req, res) => {
                 content
             }
         });
+        if (req.user.id !== message.fkSenderId) return res.status(401).json({ error: 'Unauthorized' });
         res.json(message);
 
     } catch (error) {
@@ -198,7 +218,9 @@ router.delete('/:roomId/messages/:messageId', async (req, res) => {
     try {
         const message = await prisma.message.delete({
             where: { id: parseInt(req.params.messageId) },
+            include: { fkSender: true }
         });
+        if (req.user.id !== message.fkSenderId) return res.status(401).json({ error: 'Unauthorized' });
         res.json(message);
     } catch (error) {
         console.log(error);

@@ -16,14 +16,14 @@ enum Role {
 
 model User {
   id                  Int                 @id @default(autoincrement())
-  firstName           String
-  lastName            String
+  firstname           String
+  lastname            String
   email               String              @unique
   password            String
   role                Role                @default(USER)
   fkRooms             Room[] 
   fkMessages          Message[]
-  confirmed           Boolean             @default(false)
+  isConfirmed         Boolean             @default(false)
   createdAt           DateTime            @default(now())
   updatedAt           DateTime            @updatedAt
 }   

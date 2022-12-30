@@ -9,7 +9,7 @@ export default function Room() {
 
     React.useEffect(() => {
         fetch(`http://localhost:3000/rooms/${id}`, {
-            method: 'GET',
+            method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },

@@ -1,6 +1,6 @@
 import React from 'react'
 
-export const Chat = () => {
+export const Chat = ({ socket }) => {
   return (
     <div className='container'>
       <ul id="messages"></ul>

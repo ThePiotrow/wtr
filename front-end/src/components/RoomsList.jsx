@@ -2,13 +2,23 @@ import React, {useEffect, useState} from "react";
 
 export default function RoomsList() {
 
-    let [rooms, setRooms] = useState([]);
-
+    let [joinedRooms, setJoinedRooms] = useState([]);
+    let [availableRooms, setAvailableRooms] = useState([]);
+    
     useEffect(() => {
-        fetch("http://localhost:3000/rooms")
+        fetch("http://localhost:3000/rooms", {
+            method: 'GET',
+            headers: {
+                "Authorization": "Bearer " + localStorage.getItem("token")
+            }
+        })
             .then((response) => response.json())
-            .then((data) => {
-                setRooms(data);
+            .then(({available, joined}) => {
+                setJoinedRooms(joined);
+                setAvailableRooms(available);
+            })
+            .catch((error) => {
+                console.error("Error:", error);
             });
     }, []);
 
@@ -16,7 +26,7 @@ export default function RoomsList() {
         <div>
             <h1>Rooms</h1>
             <ul>
-                {rooms.map((room) => (
+                {joinedRooms && joinedRooms.map((room) => (
                     <li key={room.id}>{room.name}</li>
                 ))}
             </ul>
