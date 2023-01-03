@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { cD } from '../utils/objectUtil'
 const data = reactive({
   ListChatMessage: [
     {
@@ -26,7 +27,7 @@ const fn = {
     data.ListChatMessage.push({
       name: 'me',
       avatar: 'https://cdn.quasar.dev/img/avatar4.jpg',
-      text: [state.messageToSend],
+      text: [cD(state.messageToSend)],
       sent: true,
       stamp: 'just now',
     })

@@ -14,6 +14,8 @@ declare module '@vue/runtime-core' {
     EssentialLink: typeof import('./components/EssentialLink.vue')['default']
     FileUploader: typeof import('./components/FileUploader.vue')['default']
     Footer: typeof import('./components/Footer.vue')['default']
+    ListRoom: typeof import('./components/ListRoom.vue')['default']
+    ListUser: typeof import('./components/ListUser.vue')['default']
     OneSignalStatus: typeof import('./components/OneSignalStatus.vue')['default']
     ProfileEdit: typeof import('./components/ProfileEdit.vue')['default']
     QAvatar: typeof import('quasar')['QAvatar']
