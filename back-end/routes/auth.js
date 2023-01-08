@@ -2,7 +2,6 @@ const { Router } = require('express');
 const bcrypt = require('bcrypt');
 const { PrismaClient } = require('@prisma/client');
 const sendEmail = require('../services/nodemailer');
-const Middleware = require('../security/Middleware');
 const { makeToken, checkToken } = require('../security/jwt');
 
 const prisma = new PrismaClient();
@@ -13,8 +12,8 @@ router.post('/login', async (req, res) => {
     const user = await prisma.user.findUnique({ where: { email: email } });
 
     if (user) {
-        if(!user.isConfirmed)res.status(401).json({ error: 'Invalid email or not confirmed' });
-        
+        if (!user.isConfirmed) res.status(401).json({ error: 'Invalid email or not confirmed' });
+
         const valid = await bcrypt.compare(password, user.password);
         if (valid) {
             const token = makeToken({ id: user.id, email: user.email, isConfirmed: true });

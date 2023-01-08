@@ -4,8 +4,7 @@ import RoomsList from '../components/RoomsList'
 export default function ViewRooms() {
   return (
     <>
-        HELLO ROOMS
-        <RoomsList/>
+      <RoomsList />
     </>
   )
 }
