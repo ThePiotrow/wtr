@@ -6,10 +6,16 @@ import ViewSignUp from './views/ViewSignUp';
 import ViewRooms from './views/ViewRooms';
 import ViewConfirmEmail from './views/ViewConfirmEmail';
 import ViewRoom from './views/ViewRoom';
-import socketIO from 'socket.io-client';
+import SocketIO from 'socket.io-client';
+import ViewChat from './views/ViewChat';
+import PrimarySearchAppBar from './components/PrimarySearchAppBar';
+import useToken from './useToken';
 
-const socket = socketIO('http://localhost:3001');
+const socket = SocketIO('http://localhost:3000');
+
 function App() {
+  const { token, setToken } = useToken();
+
   return (
     <div className="App">
       <ul>
@@ -25,13 +31,18 @@ function App() {
         <li>
           <Link to="/rooms">rooms</Link>
         </li>
+        <li>
+          <Link to="/chat">chat</Link>
+        </li>
       </ul>
 
-
+      <PrimarySearchAppBar />
       <Routes>
         <Route path="/" element={<ViewHome />} />
         <Route path="/signin" element={<ViewSignIn />} />
         <Route path="/signup" element={<ViewSignUp />} />
+        <Route path="/chat" element={<ViewChat socket={socket}/>} />
+        <Route path="/room/:id" element={<ViewRoom socket={socket}/>}/>
         <Route path="/room/:id" element={<ViewRoom />}/>
         <Route path="/rooms" element={<ViewRooms socket={socket}/>}/>
         <Route path="/confirm" element={<ViewConfirmEmail />}/>
