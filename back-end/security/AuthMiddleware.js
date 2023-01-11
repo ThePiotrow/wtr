@@ -9,13 +9,13 @@ module.exports = (req, res, next) => {
     const [type, token] = authorization.split(/\s+/);
     if (type !== "Bearer") return res.sendStatus(401);
 
-    const user = checkToken(token);
-    if (!user) return res.sendStatus(401);
-    if (!user.isConfirmed) return res.sendStatus(401);
+    const Token = checkToken(token);
+    if (!Token) return res.sendStatus(401);
+    if (!Token.isConfirmed) return res.sendStatus(401);
 
     prisma.user.findUnique({
         where: {
-            id: user.id
+            id: Token.id
         },
         include: {
             fkRooms: true

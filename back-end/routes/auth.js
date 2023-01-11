@@ -12,7 +12,7 @@ router.post('/login', async (req, res) => {
     const user = await prisma.user.findUnique({ where: { email: email } });
 
     if (user) {
-        if (!user.isConfirmed) res.status(401).json({ error: 'Invalid email or not confirmed' });
+        if (!user.isConfirmed) return res.status(401).json({ error: 'Invalid email or not confirmed' });
 
         const valid = await bcrypt.compare(password, user.password);
         if (valid) {
@@ -28,8 +28,6 @@ router.post('/login', async (req, res) => {
 
 router.post('/register', async (req, res) => {
     const { email, password, firstname, lastname } = req.body;
-
-    console.log(req.body);
 
     const user = await prisma.user.findUnique({ where: { email } });
     if (user) {
@@ -72,13 +70,26 @@ router.post('/register', async (req, res) => {
 router.get('/confirm', async (req, res) => {
     const { token } = req.query;
     try {
-        const { id, email, isConfirmed } = checkToken(token);
+        const token = checkToken(token);
 
-        const user = await prisma.user.update({ where: { email: email }, data: { isConfirmed: true } });
+        if (token) {
+            const { id, email, isConfirmed } = token;
 
-        if (user) {
-            res.json(user);
-            // sendEmail(user.email, 'Welcome to the app', 'Thank you for confirming your email') ;
+            prisma.user.findUnique({ where: { email: email } })
+                .then((user) => {
+                    if (!user.isConfirmed)
+                        prisma.user.update({ where: { email: email }, data: { isConfirmed: true } })
+                            .then((user) => {
+                                if (user) {
+                                    const Token = makeToken({ id: user.id, email: user.email, isConfirmed: true });
+                                    res.json({ Token });
+                                    sendEmail(user.email, 'Welcome to the app', 'Thank you for confirming your email');
+                                }
+                            })
+                    else {
+                        return res.status(401).json('This account has already been confirmed')
+                    }
+                });
         } else {
             res.status(401).json({ error: 'Invalid token' });
         }

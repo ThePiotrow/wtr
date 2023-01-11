@@ -11,7 +11,6 @@ const AdminMiddleware = require('../security/AdminMiddleware');
 const router = Router();
 
 router.get('/', AuthMiddleware, async (req, res) => {
-    console.log(req.user);
     try {
         const rooms = await prisma.room.findMany({
             where: { nbMaxUser: { gt: 2 } },
@@ -29,12 +28,13 @@ router.get('/', AuthMiddleware, async (req, res) => {
 
 router.get('/:roomId', AuthMiddleware, RoomMiddleware, async (req, res) => {
     try {
-        const room = await prisma.room.findUnique({
-            where: { id: parseInt(req.room.id) },
+        const { room } = req;
+        const Room = await prisma.room.findUnique({
+            where: { id: room.id },
             include: { fkUsers: true, fkMessages: true }
         });
 
-        res.json(room);
+        res.json(Room);
     } catch (error) {
         console.log(error);
         res.status(500).json({ error: 'Something went wrong' });
@@ -42,11 +42,12 @@ router.get('/:roomId', AuthMiddleware, RoomMiddleware, async (req, res) => {
 });
 
 router.post('/', AuthMiddleware, async (req, res) => {
-    // if (req.user.role !== 'ADMIN') {
-    //     return res.status(403).json({ error: 'Unauthorized' });
-    // }
     try {
         const { name, fkUsers, fkOrganizer, nbMaxUser } = req.body;
+        const { user } = req;
+
+        if (user.role !== 'ADMIN' && nbMaxUser > 2) return res.status(500).json({ error: 'You cannot create this room' });
+
         const room = await prisma.room.create({
             data: {
                 name,
@@ -61,7 +62,7 @@ router.post('/', AuthMiddleware, async (req, res) => {
     }
 });
 
-router.put('/:roomId/join', AuthMiddleware, RoomMiddleware, async (req, res) => {
+router.patch('/:roomId/join', AuthMiddleware, RoomMiddleware, async (req, res) => {
     try {
         const { user, room } = req;
 
@@ -90,12 +91,12 @@ router.put('/:roomId/join', AuthMiddleware, RoomMiddleware, async (req, res) => 
     }
 });
 
-router.put('/:roomId/leave', AuthMiddleware, RoomMiddleware, async (req, res) => {
+router.patch('/:roomId/leave', AuthMiddleware, RoomMiddleware, async (req, res) => {
     try {
         const { user, room } = req;
 
         const Room = await prisma.room.update({
-            where: { id: parseInt(room.id) },
+            where: { id: room.id },
             data: {
                 fkUsers: {
                     disconnect: { id: user.id }
@@ -111,12 +112,12 @@ router.put('/:roomId/leave', AuthMiddleware, RoomMiddleware, async (req, res) =>
     }
 });
 
-router.patch('/:roomId', AuthMiddleware, RoomMiddleware, async (req, res) => {
+router.put('/:roomId', AuthMiddleware, RoomMiddleware, async (req, res) => {
     try {
-        const { name, users, fkOrganizer, nbMaxUser } = req.body;
+        const { name, users, nbMaxUser } = req.body;
         const { user, room } = req;
 
-        if (user.role != 'ADMIN') return res.status(401).json({ error: 'Unauthorized' });
+        // if (user.role != 'ADMIN' && room.fkUsers.length > 2) return res.status(401).json({ error: 'Unauthorized' });
 
         const Users = users.reduce((acc, usr) => {
             acc.push({ id: usr });
@@ -128,6 +129,9 @@ router.patch('/:roomId', AuthMiddleware, RoomMiddleware, async (req, res) => {
             data: {
                 name,
                 fkUsers: {
+                    disconnect: {
+                        NOT: Users.map((id) => ({ id }))
+                    },
                     connect: Users,
                 },
                 nbMaxUser
@@ -143,12 +147,13 @@ router.patch('/:roomId', AuthMiddleware, RoomMiddleware, async (req, res) => {
 });
 
 router.delete('/:roomId', AuthMiddleware, RoomMiddleware, async (req, res) => {
-    if (req.user.role !== 'ADMIN') return res.status(401).json({ error: 'Unauthorized' });
+    const { room } = req;
+    if (req.user.role !== 'ADMIN' && room.fkUser.length > 2) return res.status(401).json({ error: 'Unauthorized' });
     try {
-        const room = await prisma.room.delete({
-            where: { id: parseInt(req.params.roomId) },
+        const Room = await prisma.room.delete({
+            where: { id: room.id },
         });
-        res.json(room);
+        res.json(Room);
     } catch (error) {
         console.log(error);
         res.status(500).json({ error: 'Something went wrong' });
@@ -156,13 +161,16 @@ router.delete('/:roomId', AuthMiddleware, RoomMiddleware, async (req, res) => {
 });
 
 router.post('/:roomId/message', AuthMiddleware, RoomMiddleware, async (req, res) => {
+    const { room } = req;
+
     try {
-        const { content, fkSenderId } = req.body;
+        const { content } = req.body;
+        const { user } = req;
         const message = await prisma.message.create({
             data: {
                 content,
-                fkSenderId,
-                fkRoomId: parseInt(req.params.roomId),
+                fkSenderId: user.id,
+                fkRoomId: room.id,
             }
         });
         res.json(message);
@@ -173,9 +181,11 @@ router.post('/:roomId/message', AuthMiddleware, RoomMiddleware, async (req, res)
 });
 
 router.get('/:roomId/messages', AuthMiddleware, RoomMiddleware, async (req, res) => {
+    const { room } = req;
+
     try {
         const messages = await prisma.message.findMany({
-            where: { fkRoom: parseInt(req.params.roomId) },
+            where: { fkRoom: room.id },
             orderBy: { createdAt: 'desc' },
         });
         res.json(messages);
@@ -185,17 +195,21 @@ router.get('/:roomId/messages', AuthMiddleware, RoomMiddleware, async (req, res)
     }
 });
 
-router.put('/:roomId/messages/:messageId', AuthMiddleware, RoomMiddleware, async (req, res) => {
+router.patch('/:roomId/messages/:messageId', AuthMiddleware, RoomMiddleware, async (req, res) => {
     try {
         const { content } = req.body;
+
+        if (!req.user.fkMessages.some(message => parseInt(req.params.messageId) == message.id))
+            return res.status(401).json({ error: 'Hey, that\'s not your message, buddy !' });
+
         const message = await prisma.message.update({
             where: { id: parseInt(req.params.messageId) },
             data: {
                 content
             }
         });
-        if (req.user.id !== message.fkSenderId) return res.status(401).json({ error: 'Unauthorized' });
         res.json(message);
+
 
     } catch (error) {
         console.log(error);
@@ -205,12 +219,13 @@ router.put('/:roomId/messages/:messageId', AuthMiddleware, RoomMiddleware, async
 
 router.delete('/:roomId/messages/:messageId', AuthMiddleware, RoomMiddleware, AdminMiddleware, async (req, res) => {
     try {
+        if (!req.user.fkMessages.some(message => parseInt(req.params.messageId) == message.id) && req.user.role !== "ADMIN")
+            return res.status(401).json({ error: 'Hey, that\'s not your message, buddy !' });
+
         const message = await prisma.message.delete({
             where: { id: parseInt(req.params.messageId) },
             include: { fkSender: true }
         });
-        if (req.user.id !== message.fkSenderId || req.user.role === "ADMIN")
-            return res.status(401).json({ error: 'Unauthorized' });
 
         res.json(message);
     } catch (error) {
@@ -221,5 +236,3 @@ router.delete('/:roomId/messages/:messageId', AuthMiddleware, RoomMiddleware, Ad
 });
 
 module.exports = router;
-
-

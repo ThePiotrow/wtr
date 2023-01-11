@@ -29,21 +29,14 @@ router.get('/:userId', AuthMiddleware, async (req, res) => {
     }
 });
 
-router.put('/:userId', AuthMiddleware, async (req, res) => {
+router.patch('/:userId', AuthMiddleware, async (req, res) => {
     if (req.user.id !== parseInt(req.params.userId)) {
         return res.status(403).json({ error: 'Unauthorized' });
     }
     try {
-        const { email, password, firstname, lastname, role } = req.body;
         const user = await prisma.user.update({
             where: { id: parseInt(req.params.userId) },
-            data: {
-                email,
-                password,
-                firstname,
-                lastname,
-                role,
-            }
+            data: req.body
         });
         res.json(user);
     } catch (error) {

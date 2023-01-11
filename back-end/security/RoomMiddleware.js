@@ -13,7 +13,6 @@ module.exports = (req, res, next) => {
             include: { fkUsers: true, fkMessages: true }
         })
             .then((room) => {
-                console.log(room)
                 if (!room) return res.status(500).json({ error: 'Room not found' });
 
                 if (!(
