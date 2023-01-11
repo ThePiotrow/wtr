@@ -10,16 +10,16 @@ services:
     depends_on:
       - db
     environment:
-    - NODE_ENV=development
-    - DATABASE_URL=postgres://admin:password@db:5432/mydb
-      # - DB_HOST=db
-      # - DB_USER=admin
-      # - DB_PASS=password
-      # - DB_NAME=mydb
-      # - DB_PORT=5432
-      # - DB_DIALECT=postgres
+      - NODE_ENV=development
+      - DATABASE_URL=postgres://admin:password@db:5432/mydb
+        # - DB_HOST=db
+        # - DB_USER=admin
+        # - DB_PASS=password
+        # - DB_NAME=mydb
+        # - DB_PORT=5432
+        # - DB_DIALECT=postgres
     volumes:
-      - ./back-end:/usr/src/app 
+      - ./back-end:/usr/src/app
 
   db:
     image: postgres:latest
@@ -30,7 +30,7 @@ services:
       POSTGRES_PASSWORD: password
     ports:
       - 5432:5432
-    volumes:      
+    volumes:
       - db:/var/lib/postgresql/data
 
   adminer:
@@ -39,9 +39,9 @@ services:
     ports:
       - 8082:8080
     links:
-      - db  
+      - db
     depends_on:
       - db
-  
+
 volumes:
   db: {}

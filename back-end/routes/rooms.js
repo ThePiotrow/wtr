@@ -4,37 +4,50 @@ const jwt = require('jsonwebtoken');
 const { PrismaClient } = require('@prisma/client');
 // const sendEmail = require('../services.js/nodemailer');
 const prisma = new PrismaClient();
+const AuthMiddleware = require('../security/AuthMiddleware');
+const RoomMiddleware = require('../security/RoomMiddleware');
+const AdminMiddleware = require('../security/AdminMiddleware');
 
 const router = Router();
 
-router.get('/', async (req, res) => {
+router.get('/', AuthMiddleware, async (req, res) => {
     try {
-        const rooms = await prisma.room.findMany({ include: { fkUsers: true } });
-        res.json(rooms);
-
+        const rooms = await prisma.room.findMany({
+            where: { nbMaxUser: { gt: 2 } },
+            include: { fkUsers: true }
+        });
+        res.json({
+            available: rooms.filter(room => room.fkUsers.length < room.nbMaxUser && !req.user.fkRooms.some(r => r.id === room.id)),
+            joined: rooms.filter(room => req.user.fkRooms.some(r => r.id === room.id)),
+        });
     } catch (error) {
         console.log(error);
         res.status(500).json({ error: 'Something went wrong' });
     }
 });
 
-router.get('/:roomId', async (req, res) => {
+router.get('/:roomId', AuthMiddleware, RoomMiddleware, async (req, res) => {
     try {
-        const room = await prisma.room.findUnique({ 
-            where: { id: parseInt(req.params.roomId) },
-            include: { fkUsers: true } 
+        const { room } = req;
+        const Room = await prisma.room.findUnique({
+            where: { id: room.id },
+            include: { fkUsers: true, fkMessages: true }
         });
 
-        res.json(room);
+        res.json(Room);
     } catch (error) {
         console.log(error);
         res.status(500).json({ error: 'Something went wrong' });
     }
 });
 
-router.post('/', async (req, res) => {
+router.post('/', AuthMiddleware, async (req, res) => {
     try {
         const { name, fkUsers, fkOrganizer, nbMaxUser } = req.body;
+        const { user } = req;
+
+        if (user.role !== 'ADMIN' && nbMaxUser > 2) return res.status(500).json({ error: 'You cannot create this room' });
+
         const room = await prisma.room.create({
             data: {
                 name,
@@ -49,113 +62,115 @@ router.post('/', async (req, res) => {
     }
 });
 
-router.put('/:roomId/join', async (req, res) => {
+router.patch('/:roomId/join', AuthMiddleware, RoomMiddleware, async (req, res) => {
     try {
-        const { userId } = req.body;
-        const { roomId } = req.params;
-
-        const room = await prisma.room.findUnique({ where: { id: parseInt(roomId) }, include: { fkUsers: true } });
+        const { user, room } = req;
 
         if (room.fkUsers.length >= room.nbMaxUser) {
-            res.status(500).json({ error: 'Room is full' });
+            return res.status(500).json({ error: 'Room is full' });
         }
 
-        if (room.fkUsers.some(user => user.id === userId)) {
-            res.status(500).json({ error: 'User already in room' });
+        if (room.fkUsers.some(usr => usr.id === user.id)) {
+            return res.status(500).json({ error: 'User already in room' });
         }
 
-        const userRoom = await prisma.room.update({
-            where: { id: parseInt(roomId) },
+        const Room = await prisma.room.update({
+            where: { id: room.id },
             data: {
                 fkUsers: {
-                    connect: { id: userId }
+                    connect: { id: user.id }
                 }
             },
             include: { fkUsers: true }
         });
 
-        res.json(userRoom);
+        res.json(Room);
     } catch (error) {
         console.log(error);
         res.status(500).json({ error: 'Something went wrong' });
     }
 });
 
-router.put('/:roomId/leave', async (req, res) => {
+router.patch('/:roomId/leave', AuthMiddleware, RoomMiddleware, async (req, res) => {
     try {
-        const { userId } = req.body;
-        const { roomId } = req.params;
+        const { user, room } = req;
 
-        const room = await prisma.room.findUnique({ where: { id: parseInt(roomId) }, include: { fkUsers: true } });
-
-        if (!room.fkUsers.some(user => user.id === userId)) {
-            res.status(500).json({ error: 'User not in the room' });
-        }
-
-        const userRoom = await prisma.room.update({
-            where: { id: parseInt(roomId) },
+        const Room = await prisma.room.update({
+            where: { id: room.id },
             data: {
                 fkUsers: {
-                    disconnect: { id: userId }
+                    disconnect: { id: user.id }
                 }
             },
             include: { fkUsers: true }
         });
 
-        res.json(userRoom);
+        res.json(Room);
     } catch (error) {
         console.log(error);
         res.status(500).json({ error: 'Something went wrong' });
     }
 });
 
-router.put('/:roomId', async (req, res) => {
+router.put('/:roomId', AuthMiddleware, RoomMiddleware, async (req, res) => {
     try {
-        const { name, users, fkOrganizer, nbMaxUser } = req.body;
-        const room = await prisma.room.update({
-            where: { id: parseInt(req.params.roomId) },
+        const { name, users, nbMaxUser } = req.body;
+        const { user, room } = req;
+
+        // if (user.role != 'ADMIN' && room.fkUsers.length > 2) return res.status(401).json({ error: 'Unauthorized' });
+
+        const Users = users.reduce((acc, usr) => {
+            acc.push({ id: usr });
+            return acc;
+        }, []);
+
+        const Room = await prisma.room.update({
+            where: { id: room.id },
             data: {
                 name,
-                fkOrganizer,
-                users,
+                fkUsers: {
+                    disconnect: {
+                        NOT: Users.map((id) => ({ id }))
+                    },
+                    connect: Users,
+                },
                 nbMaxUser
-            }
+            },
+            include: { fkUsers: true }
         });
 
-        const userRoom = await prisma.userRooms.create({
-            data: {
-                fkRoomId: room.id,
-                fkUserId: fkOrganizerId,
-            }
-        });
-
-        res.json(room);
+        res.json(Room);
     } catch (error) {
         console.log(error);
         res.status(500).json({ error: 'Something went wrong' });
     }
 });
 
-router.delete('/:roomId', async (req, res) => {
+router.delete('/:roomId', AuthMiddleware, RoomMiddleware, async (req, res) => {
+    const { room } = req;
+    if (req.user.role !== 'ADMIN' && room.fkUser.length > 2) return res.status(401).json({ error: 'Unauthorized' });
     try {
-        const room = await prisma.room.delete({
-            where: { id: parseInt(req.params.roomId) },
+        const Room = await prisma.room.delete({
+            where: { id: room.id },
         });
-        res.json(room);
+        res.json(Room);
     } catch (error) {
         console.log(error);
         res.status(500).json({ error: 'Something went wrong' });
     }
 });
 
-router.post('/:roomId/message', async (req, res) => {
+router.post('/:roomId/message', AuthMiddleware, RoomMiddleware, async (req, res) => {
+    const { room } = req;
+
     try {
-        const { content, fkSender } = req.body;
+        const { content } = req.body;
+        const { user } = req;
         const message = await prisma.message.create({
             data: {
                 content,
-                fkSender,
-                fkRoom: parseInt(req.params.roomId),
+                fkSenderId: user.id,
+                fkRoomId: room.id,
             }
         });
         res.json(message);
@@ -165,10 +180,12 @@ router.post('/:roomId/message', async (req, res) => {
     }
 });
 
-router.get('/:roomId/messages', async (req, res) => {
+router.get('/:roomId/messages', AuthMiddleware, RoomMiddleware, async (req, res) => {
+    const { room } = req;
+
     try {
         const messages = await prisma.message.findMany({
-            where: { fkRoom: parseInt(req.params.roomId) },
+            where: { fkRoom: room.id },
             orderBy: { createdAt: 'desc' },
         });
         res.json(messages);
@@ -178,9 +195,13 @@ router.get('/:roomId/messages', async (req, res) => {
     }
 });
 
-router.put('/:roomId/messages/:messageId', async (req, res) => {
+router.patch('/:roomId/messages/:messageId', AuthMiddleware, RoomMiddleware, async (req, res) => {
     try {
         const { content } = req.body;
+
+        if (!req.user.fkMessages.some(message => parseInt(req.params.messageId) == message.id))
+            return res.status(401).json({ error: 'Hey, that\'s not your message, buddy !' });
+
         const message = await prisma.message.update({
             where: { id: parseInt(req.params.messageId) },
             data: {
@@ -189,17 +210,23 @@ router.put('/:roomId/messages/:messageId', async (req, res) => {
         });
         res.json(message);
 
+
     } catch (error) {
         console.log(error);
         res.status(500).json({ error: 'Something went wrong' });
     }
 });
 
-router.delete('/:roomId/messages/:messageId', async (req, res) => {
+router.delete('/:roomId/messages/:messageId', AuthMiddleware, RoomMiddleware, AdminMiddleware, async (req, res) => {
     try {
+        if (!req.user.fkMessages.some(message => parseInt(req.params.messageId) == message.id) && req.user.role !== "ADMIN")
+            return res.status(401).json({ error: 'Hey, that\'s not your message, buddy !' });
+
         const message = await prisma.message.delete({
             where: { id: parseInt(req.params.messageId) },
+            include: { fkSender: true }
         });
+
         res.json(message);
     } catch (error) {
         console.log(error);
@@ -209,5 +236,3 @@ router.delete('/:roomId/messages/:messageId', async (req, res) => {
 });
 
 module.exports = router;
-
-

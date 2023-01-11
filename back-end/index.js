@@ -22,74 +22,98 @@ app.use(cors());
 
 
 app.get('/', (req, res) => {
-  res.sendFile(__dirname + '/index.html');
+    res.sendFile(__dirname + '/index.html');
 });
 
 app.get('/room2', (req, res) => {
-  res.sendFile(__dirname + '/room2.html');
+    res.sendFile(__dirname + '/room2.html');
 });
 
+// On écoute l'évènement "connection" de socket.io
+io.on("connection", (socket) => {
+    console.log("Une connexion s'active");
 
-io.on('connection', (socket) => {
-  console.log(`user connected ${socket.id}`);
-  socket.on('disconnect', () => {
-    console.log(`user disconnected ${socket.id}`);
-  });
-  socket.on('join_room', (room) => {
-    console.log("data join room :", room);
-    socket.join(room);
-    console.log(socket.rooms);
-    // socket.to(room).emit('user_joined', user);
-  });
-  socket.on('message', ({message, room}) => {
-    socket.to(room).emit('message', 
-    {message, client: socket.id});
-    console.log(`message: ${message} room: ${room}`);
-    io.emit('message', message);
-  });
-  socket.on('message2', ({message, room}) => {
-    socket.to(room).emit('message2', 
-    {message, client: socket.id});
-    console.log(`message2: ${message} room: ${room}`);
-    io.emit('message2', message);
-  });
-  
-  // socket.on('send_message', (data) => {
-  //   io.to(data.room).emit('receive_message', data);
-  //   const createMsg = await prisma.message.create({
-  //     data: {
-  //       content: data.content,
-  //       createdAt: new Date(),
-  //       updatedAt: new Date(),
-  //       fkSender: {
-  //         connect: { id: data.user.id },
-  //       fkrRoom: {
-  //         connect: { id: data.room.id },
-  //       },
-  //     },
-  //   }});
-  socket.on('leave_room', (data) => {
-    socket.leave(data.room);
-    io.to(data.room).emit('user_left', data);
-  }
-  );
-  socket.on('typing', (data) => {
-    socket.broadcast.to(data.room).emit('typing', data);
-  });
+    // On écoute les déconnexions
+    socket.on("disconnect", () => {
+        console.log("Un utilisateur s'est déconnecté");
+    });
+
+    // On écoute les entrées dans les salles
+    socket.on("enter_room", (room) => {
+        // On entre dans la salle demandée
+        socket.join(room);
+        console.log(socket.rooms);
+
+        // On envoie tous les messages du salon
+        const messages = prisma.chat.findMany({
+            select: {
+                id: true,
+                content: true,
+                fkSender: {
+                    select: {
+                        id: true,
+                        firstname: true,
+                        lastname: true,
+                        role: true,
+                    }
+                },
+                createdAt: true,
+            },
+            where: {
+                fkRoomId: room
+            }
+        }).then(list => {
+            socket.emit("init_messages", { messages: JSON.stringify(list) });
+        }).catch(e => {
+            console.log(e);
+        });
+    });
+
+    // On écoute les sorties dans les salles
+    socket.on("leave_room", (room) => {
+        // On entre dans la salle demandée
+        socket.leave(room);
+        console.log(socket.rooms);
+    });
+
+    function bite({ id, name }) {
+        // user.id
+    }
+
+    const user =
+
+        bite({ id: 1, name: "prout" })
+
+    // On gère le chat
+    socket.on("chat_message", ({ message, room, token }) => {
+        // socket.id -> user 
+        const user = verifyToken(token)
+        // fetch API -> url/rooms/:id/message
+        // Header : Authorization Bearer $userToken
+        // Body : content : $message
+        // On stocke le message dans la base
+        const Message = prisma.message.create({
+            message,
+            room
+        }).then(() => {
+            // Le message est stocké, on le relaie à tous les utilisateurs dans le salon correspondant
+            io.in(room).emit("received_message", { message, room, user: user.id });
+        }).catch(e => {
+            console.log(e);
+        });
+    });
 
 });
+
 
 app.use('/auth', auth);
 app.use('/rooms', rooms);
-app.use('/users', users);
-// app.use('/users', require('./routes/users'));
-// app.use('/posts', require('./routes/posts'));
-// app.use('/profile', require('./routes/profile'));
+// app.use('/users', users);
 app.get('/test', (req, res) => {
-  res.send('Hello World!');
+    res.send('Hello World!');
 });
 
 server.listen(3000, () => {
-  console.log('listening on *:3000');
+    console.log('listening on *:3000');
 });
 // router.delete('/rooms/:id', async (req, res) => {
