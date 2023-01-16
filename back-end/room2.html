@@ -73,19 +73,19 @@
     var form = document.getElementById('form');
     var input = document.getElementById('input');
 
-    socket.emit('join_room', 'esgi');
+    socket.emit('join_room', 'esgi2');
 
     form.addEventListener('submit', function (e) {
       e.preventDefault();
       if (input.value) {
-        socket.emit('message', {
+        socket.emit('message2', {
           message: input.value, 
-          room: 'esgi'});
+          room: 'esgi2'});
         input.value = '';
       }
     });
 
-    socket.on('message', (message, client) => {
+    socket.on('message2', ({message, client}) => {
       var item = document.createElement('li');
       item.textContent = message;
       messages.appendChild(item);

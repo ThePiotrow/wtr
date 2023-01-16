@@ -15,5 +15,7 @@ RUN npm install
 # Bundle app source
 COPY . .
 
+RUN npx prisma generate
+
 EXPOSE 3000
 CMD [ "node", "index.js" ]
