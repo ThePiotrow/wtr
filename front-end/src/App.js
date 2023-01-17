@@ -10,6 +10,7 @@ import SocketIO from 'socket.io-client';
 import ViewChat from './views/ViewChat';
 import PrimarySearchAppBar from './components/PrimarySearchAppBar';
 import useToken from './useToken';
+import CssBaseline from '@material-ui/core/CssBaseline';
 
 const socket = SocketIO('http://localhost:3000');
 
@@ -18,34 +19,17 @@ function App() {
 
   return (
     <div className="App">
-      <ul>
-        <li>
-          <Link to="/">Home</Link>
-        </li>
-        <li>
-          <Link to="/signin">SignIn</Link>
-        </li>
-        <li>
-          <Link to="/signup">signup</Link>
-        </li>
-        <li>
-          <Link to="/rooms">rooms</Link>
-        </li>
-        <li>
-          <Link to="/chat">chat</Link>
-        </li>
-      </ul>
-
+      <CssBaseline />
       <PrimarySearchAppBar />
       <Routes>
         <Route path="/" element={<ViewHome />} />
         <Route path="/signin" element={<ViewSignIn />} />
         <Route path="/signup" element={<ViewSignUp />} />
-        <Route path="/chat" element={<ViewChat socket={socket}/>} />
-        <Route path="/room/:id" element={<ViewRoom socket={socket}/>}/>
-        <Route path="/room/:id" element={<ViewRoom />}/>
-        <Route path="/rooms" element={<ViewRooms socket={socket}/>}/>
-        <Route path="/confirm" element={<ViewConfirmEmail />}/>
+        <Route path="/chat" element={<ViewChat socket={socket} />} />
+        <Route path="/room/:id" element={<ViewRoom socket={socket} />} />
+        <Route path="/room/:id" element={<ViewRoom />} />
+        <Route path="/rooms" element={<ViewRooms socket={socket} />} />
+        <Route path="/confirm" element={<ViewConfirmEmail />} />
       </Routes>
     </div >
   );

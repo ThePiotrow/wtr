@@ -17,6 +17,7 @@ import NotificationsIcon from '@mui/icons-material/Notifications';
 import MoreIcon from '@mui/icons-material/MoreVert';
 import { List, ListItem, ListItemText, ListItemIcon, Divider, Drawer, ListItemButton } from '@mui/material';
 import InboxIcon from '@mui/icons-material/MoveToInbox';
+import { Link } from 'react-router-dom';
 
 
 const Search = styled('div')(({ theme }) => ({
@@ -87,45 +88,68 @@ export default function PrimarySearchAppBar() {
     left: false,
   });
 
-  const toggleDrawer = (open) => (event) => {
-    console.log(event);
+  const toggleDrawer = (anchor, open) => (event) => {
     if (event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
+      console.log('event', event);
       return;
     }
+    console.log('event1', anchor, open);
 
-    setState({ open });
+    setState({ ...state, [anchor]: open });
   };
+
 
   const list = (anchor) => (
     <Box
+      sx={{ width: anchor === 'top' || anchor === 'bottom' ? 'auto' : 250 }}
       role="presentation"
-      onClick={toggleDrawer(false)}
-      onKeyDown={toggleDrawer(false)}
+      onClick={toggleDrawer(anchor, false)}
+      onKeyDown={toggleDrawer(anchor, false)}
     >
       <List>
-        {['Inbox', 'Starred', 'Send email', 'Drafts'].map((text, index) => (
-          <ListItem key={text} disablePadding>
-            <ListItemButton>
-              <ListItemIcon>
-                {index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
-              </ListItemIcon>
-              <ListItemText primary={text} />
-            </ListItemButton>
-          </ListItem>
-        ))}
-      </List>
-      <Divider />
-      <List>
-        {['All mail', 'Trash', 'Spam'].map((text, index) => (
-          <ListItem key={text} disablePadding>
-            <ListItemButton>
-              <ListItemIcon>
-                {index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
-              </ListItemIcon>
-              <ListItemText primary={text} />
-            </ListItemButton>
-          </ListItem>
-        ))}
+        <ListItem disablePadding>
+        <Link to="/">
+
+          <ListItemButton>
+            <ListItemIcon>
+              <MailIcon />
+            </ListItemIcon>
+            <ListItemText primary={'Home'} />
+          </ListItemButton>
+          </Link>
+
+        </ListItem>
+        <ListItem disablePadding>
+        <Link to="/signin">
+
+          <ListItemButton>
+            <ListItemIcon>
+              <MailIcon />
+            </ListItemIcon>
+            <ListItemText primary={'SignIn'} />
+          </ListItemButton>
+          </Link>
+        </ListItem>
+        <ListItem disablePadding>
+        <Link to="/signup">
+          <ListItemButton>
+            <ListItemIcon>
+              <MailIcon />
+            </ListItemIcon>
+            <ListItemText primary={'SignUp'} />
+          </ListItemButton>
+          </Link>
+        </ListItem>
+        <ListItem disablePadding>
+        <Link to="/chat">
+          <ListItemButton>
+            <ListItemIcon>
+              <MailIcon />
+            </ListItemIcon>
+            <ListItemText primary={'Chat'} />
+          </ListItemButton>
+          </Link>
+        </ListItem>
       </List>
     </Box>
   );
@@ -214,14 +238,16 @@ export default function PrimarySearchAppBar() {
             color="inherit"
             aria-label="open drawer"
             sx={{ mr: 2 }}
-            onClick={toggleDrawer(true)}
+            onClick={toggleDrawer('left', true)}
           >
             <MenuIcon />
           </IconButton>
           <Drawer
-            open={state.left}
-            onClose={toggleDrawer(false)}
+            anchor={'left'}
+            open={state['left']}
+            onClose={toggleDrawer('left', false)}
           >
+            {list('left')}
           </Drawer>
 
           <Typography
