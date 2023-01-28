@@ -4,29 +4,39 @@ import type { ModelBase } from '~/utils/type'
 import { isUndefined } from '~/utils/booleanUtil'
 import { throwErr } from '~/utils/errorUtil'
 import { ModelBasic } from './basicModel'
+import { ModelRoom } from './roomModel'
+import { ModelMessage } from './messageModel'
 
 enum EnumRole {
+  USER = 'USER',
   ADMIN = 'ADMIN',
+  ADVISOR = 'ADVISOR',
 }
 
 export const SchemaModelUser = z.object({
-  id: z.number(),
-  createdAt: z.date(),
-  updatedAt: z.date(),
+  firstname: z.string(),
+  lastname: z.string(),
   email: z.string().email(),
-  password: z.string().min(8),
-  role: z.nativeEnum(EnumRole),
+  password: z.string(),
+  role: z.enum([EnumRole.USER, EnumRole.ADMIN, EnumRole.ADVISOR]),
+  fkRooms: z.array(z.string()),
+  fkMessages: z.array(z.string()),
+  isConfirmed: z.boolean(),
 })
 
 export class ModelUser extends ModelBasic {
+  firstname = ''
+  lastname = ''
   email = ''
   password = ''
-  role = EnumRole.ADMIN
+  role = EnumRole.USER
+  fkRooms: ModelRoom[] = []
+  fkMessages: ModelMessage[] = []
+  isConfirmed = false
 
   protected constructor(obj?: ModelBase<ModelUser>) {
     if (isUndefined(obj)) {
       super()
-      return
     } else if (!objUtil.isObject(obj)) {
       throwErr('obj is not an object')
     } else {
