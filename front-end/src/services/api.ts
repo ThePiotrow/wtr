@@ -6,13 +6,25 @@ const API_CONFIG: any = {
   returnRejectedPromiseOnError: true,
   timeout: 60000,
   baseURL: 'http://localhost:3000',
-  paramsSerializer: {
-    encode: parse,
-    serialize: stringify,
+  // paramsSerializer: {
+  //   encode: parse,
+  //   serialize: stringify,
+  // },
+  headers: {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
   },
 }
 
 const api = axios.create(API_CONFIG)
+
+export const register = (data: AnyObject) => {
+  return api
+    .post('/auth/register', data)
+    .then((res) => console.log(res.data))
+    .catch((err) => console.log(err))
+}
 
 export const fetchAll = (route: string) => {
   return api
@@ -28,14 +40,12 @@ export const fetchById = (route: string, id: number) => {
     .catch((err) => console.log(err))
 }
 
-
 export const create = (route: string, data: AnyObject) => {
   return api
     .post(`/api/${route}`, data)
     .then((res) => res.data)
     .catch((err) => console.log(err))
 }
-
 
 export const update = (route: string, data: AnyObject) => {
   const { id, ...obj } = data
@@ -45,9 +55,7 @@ export const update = (route: string, data: AnyObject) => {
     .catch((err) => console.log(err))
 }
 
-
-
-export const delete = (route: string, id: number) => {
+export const deleteItem = (route: string, id: number) => {
   return api
     .delete(`/api/${route}/${id}`)
     .then((res) => res.data)

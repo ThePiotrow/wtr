@@ -1,7 +1,40 @@
 <script setup lang="ts">
+import { json } from 'stream/consumers'
+import { register } from '../services/api'
+import axios from 'axios'
 const state = reactive({
   currentTab: 'salons',
 })
+
+const loadData = async () => {
+  // const data = {
+  //   email: {
+  //     email: 'bgdu08@outlook.fr',
+  //     password: '123456',
+  //     firstname: 'Benoit',
+  //     lastname: 'Dufour',
+  //   },
+  // }
+  try {
+    const x = axios
+      .post('http://localhost:3000/auth/register', {
+        firstname: 'John',
+        lastname: 'Doe',
+        email: 'johndoe@example.com',
+        password: 'password123',
+      })
+      .then((response) => {
+        console.log(response.data)
+      })
+      .catch((error) => {
+        console.log(error)
+      })
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+loadData()
 </script>
 
 <template>
