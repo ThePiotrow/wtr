@@ -62,13 +62,13 @@ export default function TemporaryDrawer() {
     return (
         <div>
 
-            <Button onClick={toggleDrawer(anchor, true)}>{anchor}</Button>
+            <Button onClick={toggleDrawer(left, true)}>{anchor}</Button>
             <Drawer
-                anchor={anchor}
-                open={state[anchor]}
-                onClose={toggleDrawer(anchor, false)}
+                anchor={left}
+                open={state[left]}
+                onClose={toggleDrawer(left, false)}
             >
-                {list(anchor)}
+                {list(left)}
             </Drawer>
 
         </div>
