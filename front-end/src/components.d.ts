@@ -7,6 +7,9 @@ export {}
 
 declare module '@vue/runtime-core' {
   export interface GlobalComponents {
+    AuthSigninComp: typeof import('./components/AuthSigninComp.vue')['default']
+    AuthSignupComp: typeof import('./components/AuthSignupComp.vue')['default']
+    AuthSignupDirectorComp: typeof import('./components/AuthSignupComp.vue')['default']
     AvatarEdit: typeof import('./components/AvatarEdit.vue')['default']
     ChangePassword: typeof import('./components/ChangePassword.vue')['default']
     Chat: typeof import('./components/Chat.vue')['default']

@@ -46,8 +46,7 @@ router.post("/register", async (req, res) => {
       console.log("TRY CRYPT", password)
 
       const hash = bcrypt.hashSync(password)
-      console.log("🚀 ~ file: auth.js:58 ~ router.post ~ hash", hash)
-      return
+
       const newUser = await prisma.user.create({
         data: {
           email,
@@ -56,7 +55,6 @@ router.post("/register", async (req, res) => {
           lastname,
         },
       })
-      console.log("🚀 ~ file: auth.js:57 ~ router.post ~ newUser", newUser)
 
       const token = makeToken({
         id: newUser.id,
@@ -81,20 +79,22 @@ router.post("/register", async (req, res) => {
   }
 })
 
-// router.get('/verify', async (req, res) => {
-//     const token = req.headers.authorization.split(' ')[1];
-//     try {
-//         const { id } = verify(token);
-//         const user = await prisma.user.findUnique({ where: { id, confirmed: true } });
-//         if (user) {
-//             res.json(user);
-//         } else {
-//             res.status(401).json({ error: 'Invalid token' });
-//         }
-//     } catch (error) {
-//         res.status(401).json({ error: 'Invalid token' });
-//     }
-// });
+router.get("/verify", async (req, res) => {
+  const token = req.headers.authorization.split(" ")[1]
+  try {
+    const { id } = verify(token)
+    const user = await prisma.user.findUnique({
+      where: { id, confirmed: true },
+    })
+    if (user) {
+      res.json(user)
+    } else {
+      res.status(401).json({ error: "Invalid token" })
+    }
+  } catch (error) {
+    res.status(401).json({ error: "Invalid token" })
+  }
+})
 
 router.get("/confirm", async (req, res) => {
   const { token } = req.query

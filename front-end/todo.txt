@@ -1,5 +1,5 @@
 Pour tout le monde:
-- créer les models selon prisma
+X créer les models selon prisma
 - enregistrer dans le store token et mon compte utilisateur
 - afficher les salons 
 - afficher les utilisateurs 

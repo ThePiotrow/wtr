@@ -15,23 +15,23 @@ const loadData = async () => {
   //     lastname: 'Dufour',
   //   },
   // }
-  try {
-    const x = axios
-      .post('http://localhost:3000/auth/register', {
-        firstname: 'John',
-        lastname: 'Doe',
-        email: 'johndoe@example.com',
-        password: 'password123',
-      })
-      .then((response) => {
-        console.log(response.data)
-      })
-      .catch((error) => {
-        console.log(error)
-      })
-  } catch (error) {
-    console.log(error)
-  }
+  // try {
+  //   const x = axios
+  //     .post('http://localhost:3000/auth/register', {
+  //       firstname: 'John',
+  //       lastname: 'Doe',
+  //       email: 'johndoe@example.com',
+  //       password: 'password123',
+  //     })
+  //     .then((response) => {
+  //       console.log(response.data)
+  //     })
+  //     .catch((error) => {
+  //       console.log(error)
+  //     })
+  // } catch (error) {
+  //   console.log(error)
+  // }
 }
 
 loadData()
