@@ -1,3 +1,4 @@
 {
-  "i18n-ally.localesPaths": ["frontend/locales"]
+  "i18n-ally.localesPaths": ["frontend/locales"],
+  "dotenv.enableAutocloaking": false
 }

@@ -34,12 +34,20 @@ router.post("/login", async (req, res) => {
 router.post("/register", async (req, res) => {
   console.log(req.body)
   const { email, password, firstname, lastname } = req.body
+  console.log(email, password, firstname, lastname)
   try {
     const user = await prisma.user.findUnique({ where: { email } })
+    console.log("🚀 ~ file: auth.js:40 ~ router.post ~ user", user)
+
     if (user) {
       res.status(409).json({ error: "Email already exists" })
+      console.log("user already exists")
     } else {
-      const hash = await bcrypt.hash(password, 10)
+      console.log("TRY CRYPT", password)
+
+      const hash = bcrypt.hashSync(password)
+      console.log("🚀 ~ file: auth.js:58 ~ router.post ~ hash", hash)
+      return
       const newUser = await prisma.user.create({
         data: {
           email,
@@ -48,11 +56,14 @@ router.post("/register", async (req, res) => {
           lastname,
         },
       })
+      console.log("🚀 ~ file: auth.js:57 ~ router.post ~ newUser", newUser)
+
       const token = makeToken({
         id: newUser.id,
         email: email,
         isConfirmed: false,
       })
+      console.log("🚀 ~ file: auth.js:64 ~ router.post ~ token", token)
 
       let mail = sendEmail(
         email,
@@ -61,11 +72,12 @@ router.post("/register", async (req, res) => {
           firstname.charAt(0).toUpperCase() + firstname.slice(1)
         }, <br> Pour activer ton compte clique sur le lien : <br> <a href="http://localhost:3001/confirm?token=${token}">http://localhost:3001/confirm?token=${token}</a>`
       )
-
+      console.log("mail sent")
       res.json({ token })
     }
   } catch (error) {
-    console.log(error)
+    console.log("error", error)
+    res.status(500).json({ error })
   }
 })
 
