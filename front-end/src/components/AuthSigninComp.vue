@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import { ModelUser } from '~/models/userModel'
-
-const emit = defineEmits<{
-  (e: 'signin', val: FormAuthSignin): void
-}>()
+import { Api } from '~/services/api'
+import { StoreUser } from '../stores/userStore'
+const router = useRouter()
 
 class FormAuthSignin {
   email = ''
@@ -14,12 +13,20 @@ const state = reactive({
 })
 
 const fn = {
-  onClickSignin() {
+  async onClickSignin() {
+    debugger
     const userModel = ModelUser.make<ModelUser>(state.form)
     if (!userModel) return
-    //TODO coonection in db
-    //TODO stock token in pinia
-    // TODO redirect to home
+
+    const token = await Api.login(userModel)
+    if (!token) {
+      console.log('token is null')
+      return
+    }
+
+    StoreUser().setToken(token)
+    // TODO redirect to home page
+    router.push('/')
   },
 }
 </script>

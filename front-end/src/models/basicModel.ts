@@ -19,6 +19,7 @@ export class ModelBasic implements InterfaceBasicModel {
   }
 
   static make<T>(obj?: ModelBase<any>): T | undefined {
+    debugger
     if (!obj) return undefined
     try {
       return new this(obj) as T

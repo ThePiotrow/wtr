@@ -4,6 +4,9 @@ import { domUtil } from '~/utils/domUtil'
 import { objUtil } from '~/utils/objectUtil'
 import { ModelUser } from '../models/userModel'
 import { Model } from '../utils/type'
+import { Api } from '~/services/api'
+import { StoreUser } from '~/stores/userStore'
+const router = useRouter()
 
 class FormAuthUser {
   lastname = ''
@@ -18,12 +21,15 @@ const state = reactive({
 })
 
 const fn = {
-  onClickSignup() {
+  async onClickSignup() {
     const userModel = ModelUser.make<ModelUser>(state.form)
     if (!userModel) return
-    //TODO save in db
-    //TODO stock token in pinia
-    // TODO redirect to home
+
+    const token = await Api.register(userModel)
+    if (!token) return
+
+    StoreUser().setToken(token)
+    router.push('/')
   },
 }
 </script>
