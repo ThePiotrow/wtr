@@ -40,8 +40,15 @@ router.post("/register", async (req, res) => {
     console.log("🚀 ~ file: auth.js:40 ~ router.post ~ user", user)
 
     if (user) {
-      res.status(409).json({ error: "Email already exists" })
-      console.log("user already exists")
+        if (!user.isConfirmed) return res.status(401).json({ error: 'Invalid email or not confirmed' });
+
+        const valid = await bcrypt.compare(password, user.password);
+        if (valid) {
+            const token = makeToken({ id: user.id, email: user.email, isConfirmed: true });
+            res.status(200).json({ token, user });
+        } else {
+            res.status(401).json({ error: 'Invalid password' });
+        }
     } else {
       console.log("TRY CRYPT", password)
 
