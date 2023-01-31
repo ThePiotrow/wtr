@@ -7,10 +7,19 @@ const props = defineProps({
     required: true,
   },
 })
+
+const fn = {
+  contactUser() {
+    console.log('click on user')
+    //TODO contact user backend if available
+  },
+}
 </script>
 
 <template>
   <div>
-    <h2 v-for="user in props.listUser" :key="user.id">{{ user.firstname }} {{ user.lastname }}</h2>
+    <h2 v-for="user in props.listUser" :key="user.id" @click="fn.contactUser">
+      {{ user.firstname }} {{ user.lastname }}
+    </h2>
   </div>
 </template>

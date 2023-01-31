@@ -32,6 +32,7 @@ declare module '@vue/runtime-core' {
     QPage: typeof import('quasar')['QPage']
     QSelect: typeof import('quasar')['QSelect']
     README: typeof import('./components/README.md')['default']
+    Room: typeof import('./components/Room.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
   }

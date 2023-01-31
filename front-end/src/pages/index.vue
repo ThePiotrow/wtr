@@ -40,6 +40,13 @@ const loadData = async () => {
   ]
 }
 
+const fn = {
+  onClickAskAdvisor() {
+    console.log('click on ask advisor')
+    //TODO: ask to advisor
+  },
+}
+
 loadData()
 </script>
 
@@ -60,19 +67,28 @@ loadData()
             >
               <q-tab name="salons" label="Salons" />
               <q-tab name="utilisateurs" label="Utilisateurs" />
+              <q-tab name="advisor" label="Conseiller" />
             </q-tabs>
 
             <q-separator />
 
             <q-tab-panels v-model="state.currentTab" animated>
               <q-tab-panel name="salons">
-                <div class="text-h6">Salons</div>
                 <ListRoom :listRoom="state.ListRoom"></ListRoom>
               </q-tab-panel>
 
               <q-tab-panel name="utilisateurs">
-                <div class="text-h6">Utilisateurs</div>
                 <ListUser :listUser="state.ListUser"></ListUser>
+              </q-tab-panel>
+
+              <q-tab-panel name="advisor">
+                <q-btn
+                  @click="fn.onClickAskAdvisor"
+                  color="light-green-7"
+                  size="lg"
+                  class="full-width"
+                  label="Parler à un conseiller"
+                />
               </q-tab-panel>
             </q-tab-panels>
           </q-card>
