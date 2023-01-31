@@ -1,37 +1,43 @@
 <script setup lang="ts">
-import { json } from 'stream/consumers'
-import { register } from '../services/api'
-import axios from 'axios'
+import { EnumRole, ModelUser } from '../models/userModel'
+import { Api } from '~/services/api'
+import { ModelRoom } from '~/models/roomModel'
 const state = reactive({
   currentTab: 'salons',
+  ListUser: [] as ModelUser[],
+  ListRoom: [] as ModelRoom[],
 })
 
 const loadData = async () => {
-  // const data = {
-  //   email: {
-  //     email: 'bgdu08@outlook.fr',
-  //     password: '123456',
-  //     firstname: 'Benoit',
-  //     lastname: 'Dufour',
-  //   },
-  // }
-  // try {
-  //   const x = axios
-  //     .post('http://localhost:3000/auth/register', {
-  //       firstname: 'John',
-  //       lastname: 'Doe',
-  //       email: 'johndoe@example.com',
-  //       password: 'password123',
-  //     })
-  //     .then((response) => {
-  //       console.log(response.data)
-  //     })
-  //     .catch((error) => {
-  //       console.log(error)
-  //     })
-  // } catch (error) {
-  //   console.log(error)
-  // }
+  // state.ListUser = Api.fetchAll('users')
+  // state.ListRoom = Api.fetchAll('rooms')
+  state.ListUser = [
+    ModelUser.make<ModelUser>({
+      firstname: 'John',
+      lastname: 'Doe',
+      email: 'johndoe@gmail.com',
+      password: '123456',
+      role: EnumRole.USER,
+      fkRooms: [],
+      fkMessages: [],
+      isConfirmed: false,
+      id: 333,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    }),
+  ]
+
+  state.ListRoom = [
+    ModelRoom.make<ModelRoom>({
+      name: 'Salon 1',
+      fkUsers: [],
+      fkMessages: [],
+      nbMaxUser: 10,
+      id: 3333,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    }),
+  ]
 }
 
 loadData()
@@ -61,12 +67,12 @@ loadData()
             <q-tab-panels v-model="state.currentTab" animated>
               <q-tab-panel name="salons">
                 <div class="text-h6">Salons</div>
-                Lorem ipsum dolor sit amet consectetur adipisicing elit.
+                <ListRoom :listRoom="state.ListRoom"></ListRoom>
               </q-tab-panel>
 
               <q-tab-panel name="utilisateurs">
                 <div class="text-h6">Utilisateurs</div>
-                Lorem ipsum dolor sit amet consectetur adipisicing elit.
+                <ListUser :listUser="state.ListUser"></ListUser>
               </q-tab-panel>
             </q-tab-panels>
           </q-card>

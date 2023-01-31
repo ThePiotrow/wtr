@@ -7,7 +7,7 @@ import { ModelBasic } from './basicModel'
 import { ModelRoom } from './roomModel'
 import { ModelMessage } from './messageModel'
 
-enum EnumRole {
+export enum EnumRole {
   USER = 'USER',
   ADMIN = 'ADMIN',
   ADVISOR = 'ADVISOR',

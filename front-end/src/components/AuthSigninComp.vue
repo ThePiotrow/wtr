@@ -14,7 +14,6 @@ const state = reactive({
 
 const fn = {
   async onClickSignin() {
-    debugger
     const userModel = ModelUser.make<ModelUser>(state.form)
     if (!userModel) return
 
