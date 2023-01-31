@@ -1,0 +1,23 @@
+Pour tout le monde:
+X créer les models selon prisma
+X enregistrer dans le store token et mon compte utilisateur
+X afficher les salons 
+X afficher les utilisateurs 
+
+
+En tant qu’utilisateur :
+WAIT demande de communiquer avec un conseiller de vente (verif si conseiller dispo, sinon on peut pas)
+WAIT envoyer un dm à un client
+WAIT rejoindre un salon (ne doit pas être complet)
+- recevoir des notifications commerciales d’un administrateur
+
+En tant qu’administrateur :
+● voir les demandes de communication en attente
+● povuoir accepter / refuser une demande de communication
+● se mettre dispo pour communquer avec clients
+● créer/modifier/ delete un salon de discussion , changer le nom et le volume d'utilisateurs
+● émettre des notifications commerciales
+
+
+CHATBOT
+● communiquer avec un chatbot pour l’entretien d’une moto (voir workflow)

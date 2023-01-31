@@ -1,0 +1,50 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = [ "linux-arm64-openssl-1.1.x", "native", "debian-openssl-1.1.x", "rhel-openssl-1.0.x", "rhel-openssl-1.1.x", "darwin", "windows"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+  ADVISOR
+}
+
+model User {
+  id          Int       @id @default(autoincrement())
+  firstname   String
+  lastname    String
+  email       String    @unique
+  password    String
+  role        Role      @default(USER)
+  fkRooms     Room[]
+  fkMessages  Message[]
+  isConfirmed Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Room {
+  id         Int       @id @default(autoincrement())
+  name       String
+  fkUsers    User[]
+  fkMessages Message[]
+  nbMaxUser  Int
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+}
+
+model Message {
+  id         Int      @id @default(autoincrement())
+  content    String
+  fkSender   User     @relation(fields: [fkSenderId], references: [id])
+  fkSenderId Int
+  fkRoom     Room     @relation(fields: [fkRoomId], references: [id])
+  fkRoomId   Int
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
