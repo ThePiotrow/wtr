@@ -23,5 +23,9 @@ export const StoreUser = defineStore({
     setUser(user: ModelUser) {
       this.user = user
     },
+    resetUser() {
+      this.user = {} as ModelUser
+      this.token = ''
+    },
   },
 })

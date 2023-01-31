@@ -1,14 +1,17 @@
 <script setup lang="ts">
 import { ModelMessage } from '~/models/messageModel'
+import { ModelRoom } from '~/models/roomModel'
+import { StoreUser } from '~/stores/userStore'
 import { cD } from '../utils/objectUtil'
 import { AnyObject } from '../utils/type'
 
-const props = defineProps({
-  listMessage: {
-    type: Array as () => ModelMessage[],
-    required: true,
-  },
-})
+import { io } from 'socket.io-client'
+
+const socket = io()
+
+const emit = defineEmits<{
+  (event: 'onSendingMessage', payload: string): void
+}>()
 
 class ChatMessageClass {
   name = ''
@@ -40,34 +43,30 @@ const state = reactive({
   ListChatMessage: [] as ChatMessageClass[],
 })
 
+socket.on('init_messages', (ListMessage: ModelMessage[]) => {
+  state.ListChatMessage = state.ListChatMessage.reduce((acc, message) => {
+    return [...acc, ...fn.transformMessage(message)]
+  }, state.ListChatMessage)
+})
+
+socket.on('received_message', (message: ModelMessage) => {
+  state.ListChatMessage.push(fn.transformMessage(message))
+})
+
 const fn = {
   onEnterMessageToSend() {
-    const ChatMessage = new ChatMessageClass({
-      name: StoreUser().getUser().firstname + ' ' + StoreUser().getUser().lastname,
-      text: state.messageToSend,
-      sent: true,
-      stamp: Date.now(),
-    })
-
-    const Message = ChatMessage.toModelMessage()
-
-    //TODO send message to backend
-
+    emit('onSendingMessage', state.messageToSend)
     state.messageToSend = ''
   },
 
   transformMessage(Message: ModelMessage) {
-    return new ChatMessage({
+    return new ChatMessageClass({
       name: Message.fkSender.firstname + ' ' + Message.fkSender.lastname,
       text: Message.content,
       sent: true,
       stamp: Message.createdAt,
     })
   },
-}
-
-const loadData = async () => {
-  state.ListChatMessage = props.listChatMessage.map((message) => fn.transformMessage(message))
 }
 </script>
 

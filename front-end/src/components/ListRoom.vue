@@ -2,6 +2,7 @@
 import { ModelRoom } from '~/models/roomModel'
 import { EnumRole } from '../models/userModel'
 import { StoreUser } from '../stores/userStore'
+import { ModelUser } from '~/models/userModel'
 
 const props = defineProps({
   listRoom: {
@@ -10,15 +11,16 @@ const props = defineProps({
   },
 })
 
+const emit = defineEmits<{
+  (event: 'onEnterRoom', payload: ModelRoom): void
+  (event: 'onLeftRoom'): void
+}>()
+
 const state = reactive({
   User: {} as ModelUser,
 })
 
 const fn = {
-  contactUser() {
-    console.log('click on user')
-    //TODO contact user backend if available
-  },
   createRoom() {
     //TODO créer un salon de discussion
     console.log('créer un salon de discussion')
@@ -31,26 +33,20 @@ const fn = {
     //TODO supprimer un salon de discussion
     console.log('supprimer un salon de discussion')
   },
-  joinRoom() {
-    //TODO rejoindre un salon de discussion
-    console.log('rejoindre un salon de discussion')
+  joinRoom(room: ModelRoom) {
+    emit('onEnterRoom', room)
   },
 }
 
 const loadData = async () => {
-  // state.User = StoreUser().getUser()
-  state.User = {
-    role: EnumRole.ADMIN,
-  }
+  state.User = StoreUser().getUser()
 }
 </script>
 
 <template>
   <div>
-    <div v-for="room in props.listRoom" :key="room.id" @click="fn.contactUser">
-      <h2 v-for="room in props.listRoom" :key="room.id" @click="fn.contactUser">
-        {{ room.name }} , {{ room.nbMaxUser }} max
-      </h2>
+    <div v-for="room in props.listRoom" :key="room.id">
+      <h2>{{ room.name }} , {{ room.nbMaxUser }} max</h2>
       <div v-if="state.User.role === EnumRole.ADMIN">
         <q-btn
           @click="fn.createRoom"
@@ -75,15 +71,7 @@ const loadData = async () => {
         />
       </div>
 
-      <div v-if="state.User.role === EnumRole.USER">
-        <q-btn
-          @click="fn.joinRoom"
-          color="light-green-7"
-          size="lg"
-          class="full-width"
-          label="Créer un salon de discussion"
-        />
-      </div>
+      <q-btn @click="fn.joinRoom" color="light-green-7" size="lg" class="full-width" label="Joindre le salon" />
     </div>
   </div>
 </template>

@@ -17,13 +17,15 @@ const fn = {
     const userModel = ModelUser.make<ModelUser>(state.form)
     if (!userModel) return
 
-    const token = await Api.login(userModel)
+    const { token, user } = await Api.login(userModel)
     if (!token) {
       console.log('token is null')
       return
     }
 
     StoreUser().setToken(token)
+    StoreUser().setUser(user)
+
     // TODO redirect to home page
     router.push('/')
   },

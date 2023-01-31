@@ -2,10 +2,17 @@
 import { EnumRole, ModelUser } from '../models/userModel'
 import { Api } from '~/services/api'
 import { ModelRoom } from '~/models/roomModel'
+import { io } from 'socket.io-client'
+import { ModelMessage } from '~/models/messageModel'
+import { StoreUser } from '~/stores/userStore'
+const socket = io()
+
 const state = reactive({
   currentTab: 'salons',
   ListUser: [] as ModelUser[],
   ListRoom: [] as ModelRoom[],
+  CurrentRoom: null as ModelRoom | null,
+  CurrentListMessage: [] as ModelMessage[],
 })
 
 const loadData = async () => {
@@ -41,9 +48,20 @@ const loadData = async () => {
 }
 
 const fn = {
+  setCurrentRoom(room: ModelRoom) {
+    socket.emit('enter_room', room.id)
+    state.CurrentRoom = room
+  },
+  sendMessage(message: ModelMessage) {
+    socket.emit('chat_message', { message, room: state.CurrentRoom.id, token: StoreUser().getToken() })
+  },
+
+  resetCurrentRoom() {
+    state.CurrentRoom = null
+    state.CurrentListMessage = []
+  },
   onClickAskAdvisor() {
-    console.log('click on ask advisor')
-    //TODO: ask to advisor
+    //TODO: ask an available advisor
   },
 }
 
@@ -74,7 +92,11 @@ loadData()
 
             <q-tab-panels v-model="state.currentTab" animated>
               <q-tab-panel name="salons">
-                <ListRoom :listRoom="state.ListRoom"></ListRoom>
+                <ListRoom
+                  :listRoom="state.ListRoom"
+                  @on-enter-room="fn.setCurrentRoom"
+                  @on-left-room="fn.resetCurrentRoom"
+                />
               </q-tab-panel>
 
               <q-tab-panel name="utilisateurs">
@@ -96,7 +118,9 @@ loadData()
       </div>
     </div>
     <div class="col-7">
-      <Chat></Chat>
+      <template v-if="state.CurrentRoom">
+        <Chat :list-message="state.CurrentListMessage" @on-sending-message="sendMessage"> </Chat>
+      </template>
     </div>
   </div>
 </template>

@@ -34,6 +34,13 @@ export namespace Api {
       .catch((err) => console.log(err))
   }
 
+  export const logout = () => {
+    return api
+      .get('/auth/logout')
+      .then((res) => res.data)
+      .catch((err) => console.log(err))
+  }
+
   export const fetchAll = (route: string) => {
     return api
       .get(`/api/${route}`)
